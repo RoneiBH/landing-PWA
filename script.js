@@ -194,27 +194,59 @@ console.log(`
 🌐 Site desenvolvido com HTML, CSS e JavaScript puro
 `)
 
-// PWA Service Worker Registration
+// PWA Service Worker Registration com debug
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("/sw.js")
-      console.log("SW registrado com sucesso:", registration)
+      console.log("🔧 Registrando Service Worker...")
+      const registration = await navigator.serviceWorker.register("/sw.js", {
+        scope: "/",
+      })
+
+      console.log("✅ SW registrado com sucesso:", registration)
 
       // Verificar atualizações
       registration.addEventListener("updatefound", () => {
+        console.log("🔄 Nova versão do SW encontrada")
         const newWorker = registration.installing
         newWorker.addEventListener("statechange", () => {
           if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-            // Nova versão disponível
+            console.log("✨ Nova versão instalada")
             showUpdateNotification()
           }
         })
       })
+
+      // Verificar se SW está ativo
+      if (registration.active) {
+        console.log("✅ Service Worker está ativo")
+      }
     } catch (error) {
-      console.log("Erro ao registrar SW:", error)
+      console.error("❌ Erro ao registrar SW:", error)
     }
   })
+
+  // Debug: verificar estado do SW
+  navigator.serviceWorker.ready.then((registration) => {
+    console.log("🎯 Service Worker pronto:", registration)
+  })
+}
+
+// Debug: verificar se PWA pode ser instalado
+window.addEventListener("beforeinstallprompt", (e) => {
+  console.log("🎉 PWA pode ser instalado!", e)
+})
+
+// Debug: verificar se PWA foi instalado
+window.addEventListener("appinstalled", () => {
+  console.log("🎊 PWA foi instalado com sucesso!")
+})
+
+// Debug: verificar modo standalone
+if (window.matchMedia("(display-mode: standalone)").matches) {
+  console.log("📱 Executando em modo PWA standalone")
+} else {
+  console.log("🌐 Executando no navegador")
 }
 
 // PWA Install Prompt

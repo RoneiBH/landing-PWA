@@ -234,27 +234,202 @@ class MobileInstallManager {
   }
 
   async handleInstallClick() {
+    console.log("Botão de instalação clicado", this.platform, !!this.deferredPrompt)
+
     if (this.platform === "android-chrome" && this.deferredPrompt) {
-      // Usar prompt nativo do Chrome
-      this.deferredPrompt.prompt()
+      try {
+        // Usar prompt nativo do Chrome
+        console.log("Mostrando prompt nativo...")
+        this.deferredPrompt.prompt()
 
-      const { outcome } = await this.deferredPrompt.userChoice
-      console.log(`Usuário ${outcome} a instalação`)
+        const { outcome } = await this.deferredPrompt.userChoice
+        console.log(`Usuário ${outcome} a instalação`)
 
-      if (outcome === "accepted") {
-        this.hideAllPrompts()
+        if (outcome === "accepted") {
+          this.hideAllPrompts()
+          this.showSuccessMessage()
+        }
+
+        this.deferredPrompt = null
+      } catch (error) {
+        console.error("Erro ao mostrar prompt:", error)
+        this.showDetailedInstructions()
       }
-
-      this.deferredPrompt = null
     } else {
-      // Mostrar instruções detalhadas
+      // Para outras plataformas, mostrar instruções detalhadas
+      console.log("Mostrando instruções detalhadas para:", this.platform)
       this.showDetailedInstructions()
     }
   }
 
   showDetailedInstructions() {
-    // Redirecionar para página de instruções detalhadas
-    window.open("/mobile-install-guide.html", "_blank")
+    // Fechar modal atual
+    this.hideAllPrompts()
+
+    // Criar modal com instruções detalhadas
+    const instructionsModal = this.createInstructionsModal()
+    document.body.appendChild(instructionsModal)
+  }
+
+  createInstructionsModal() {
+    const modal = document.createElement("div")
+    modal.id = "detailed-instructions-modal"
+    modal.className = "mobile-install-prompt"
+
+    const instructions = this.getDetailedInstructions()
+
+    modal.innerHTML = `
+      <div class="install-prompt-overlay"></div>
+      <div class="install-prompt-content">
+        <div class="install-prompt-header">
+          <div class="install-prompt-title">
+            <h3>Como Instalar TechFix Pro</h3>
+            <p>Siga os passos para seu dispositivo</p>
+          </div>
+          <button class="install-prompt-close" onclick="this.closest('.mobile-install-prompt').remove()">&times;</button>
+        </div>
+        
+        <div class="install-prompt-body">
+          ${instructions}
+        </div>
+        
+        <div class="install-prompt-actions">
+          <button class="install-btn-primary" onclick="this.closest('.mobile-install-prompt').remove()">
+            Entendi
+          </button>
+        </div>
+      </div>
+    `
+
+    return modal
+  }
+
+  getDetailedInstructions() {
+    switch (this.platform) {
+      case "ios":
+        return `
+          <div class="platform-instructions ios-instructions">
+            <div class="instruction-step">
+              <div class="step-number">1</div>
+              <div class="step-content">
+                <h4>Abrir Menu Compartilhar</h4>
+                <p>Toque no botão <strong>Compartilhar</strong> (□↑) na parte inferior da tela</p>
+              </div>
+            </div>
+            
+            <div class="instruction-step">
+              <div class="step-number">2</div>
+              <div class="step-content">
+                <h4>Encontrar Opção</h4>
+                <p>Role para baixo e procure <strong>"Adicionar à Tela de Início"</strong></p>
+              </div>
+            </div>
+            
+            <div class="instruction-step">
+              <div class="step-number">3</div>
+              <div class="step-content">
+                <h4>Confirmar</h4>
+                <p>Toque em <strong>"Adicionar"</strong> no canto superior direito</p>
+              </div>
+            </div>
+            
+            <div class="alert warning">
+              <strong>⚠️ Importante:</strong> Só funciona no Safari. Não funciona no Chrome ou outros navegadores no iPhone.
+            </div>
+          </div>
+        `
+
+      case "android-samsung":
+        return `
+        <div class="platform-instructions samsung-instructions">
+          <div class="instruction-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Abrir Menu</h4>
+              <p>Toque no menu <strong>(≡)</strong> no canto inferior direito</p>
+            </div>
+          </div>
+          
+          <div class="instruction-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Adicionar Página</h4>
+              <p>Selecione <strong>"Adicionar página à"</strong></p>
+            </div>
+          </div>
+          
+          <div class="instruction-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Escolher Destino</h4>
+              <p>Escolha <strong>"Tela inicial"</strong></p>
+            </div>
+          </div>
+        </div>
+      `
+
+      case "android-chrome":
+        return `
+        <div class="platform-instructions android-instructions">
+          <div class="alert info">
+            <strong>💡 Dica:</strong> Se o prompt automático não apareceu, tente estas opções:
+          </div>
+          
+          <div class="instruction-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Menu do Chrome</h4>
+              <p>Toque nos <strong>3 pontinhos (⋮)</strong> no canto superior direito</p>
+            </div>
+          </div>
+          
+          <div class="instruction-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Instalar App</h4>
+              <p>Procure por <strong>"Instalar app"</strong> ou <strong>"Adicionar à tela inicial"</strong></p>
+            </div>
+          </div>
+          
+          <div class="instruction-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Confirmar</h4>
+              <p>Toque em <strong>"Instalar"</strong> ou <strong>"Adicionar"</strong></p>
+            </div>
+          </div>
+        </div>
+      `
+
+      default:
+        return `
+        <div class="platform-instructions generic-instructions">
+          <div class="instruction-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Menu do Navegador</h4>
+              <p>Toque no menu do seu navegador (geralmente ⋮ ou ≡)</p>
+            </div>
+          </div>
+          
+          <div class="instruction-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Procurar Opção</h4>
+              <p>Procure por <strong>"Adicionar à tela inicial"</strong>, <strong>"Instalar"</strong> ou <strong>"Adicionar atalho"</strong></p>
+            </div>
+          </div>
+          
+          <div class="instruction-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Confirmar</h4>
+              <p>Confirme a instalação</p>
+            </div>
+          </div>
+        </div>
+      `
+    }
   }
 
   dismissPrompt() {
@@ -626,6 +801,63 @@ const installPromptCSS = `
   .install-prompt-actions {
     flex-direction: column;
   }
+}
+
+.instruction-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 4px solid #ea580c;
+}
+
+.step-number {
+  background: #ea580c;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.step-content h4 {
+  margin: 0 0 0.5rem 0;
+  color: #111827;
+  font-size: 1rem;
+}
+
+.step-content p {
+  margin: 0;
+  color: #374151;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.alert.info {
+  background: #dbeafe;
+  border: 1px solid #3b82f6;
+  color: #1e40af;
+}
+
+.alert.warning {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  color: #92400e;
 }
 `
 

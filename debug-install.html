@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug PWA Install - TechFix Pro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .debug-section {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .debug-section h3 {
+            margin-top: 0;
+            color: #111827;
+        }
+        
+        .status {
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        button {
+            background: #ea580c;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+            font-size: 1rem;
+        }
+        
+        button:hover {
+            background: #c2410c;
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .log {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug PWA Install - TechFix Pro</h1>
+    
+    <div class="debug-section">
+        <h3>📋 Status do PWA</h3>
+        <div id="pwa-status"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>🎮 Controles de Teste</h3>
+        <button onclick="testInstallPrompt()">Testar Prompt de Instalação</button>
+        <button onclick="forceShowPrompt()">Forçar Mostrar Prompt</button>
+        <button onclick="clearStorage()">Limpar Storage</button>
+        <button onclick="checkManifest()">Verificar Manifest</button>
+        <button onclick="checkServiceWorker()">Verificar Service Worker</button>
+        <button onclick="simulateInstall()">Simular Instalação</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>📱 Informações do Dispositivo</h3>
+        <div id="device-info"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>📊 Log de Debug</h3>
+        <div id="debug-log" class="log"></div>
+        <button onclick="clearLog()">Limpar Log</button>
+    </div>
+
+    <script>
+        let deferredPrompt = null;
+        let installManager = null;
+        
+        // Função para log
+        function debugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('debug-log');
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        // Inicializar debug
+        function initDebug() {
+            debugLog('🚀 Iniciando debug PWA...');
+            
+            // Verificar suporte básico
+            checkBasicSupport();
+            
+            // Mostrar info do dispositivo
+            showDeviceInfo();
+            
+            // Configurar listeners
+            setupListeners();
+            
+            // Verificar status inicial
+            updatePWAStatus();
+            
+            // Tentar acessar o install manager
+            if (window.MobileInstallManager) {
+                installManager = window.MobileInstallManager;
+                debugLog('✅ MobileInstallManager encontrado');
+            } else {
+                debugLog('❌ MobileInstallManager não encontrado');
+            }
+        }
+        
+        function checkBasicSupport() {
+            const checks = [
+                { name: 'Service Worker', supported: 'serviceWorker' in navigator },
+                { name: 'Manifest', supported: 'manifest' in document.createElement('link') },
+                { name: 'HTTPS', supported: location.protocol === 'https:' || location.hostname === 'localhost' },
+                { name: 'Standalone', supported: window.matchMedia('(display-mode: standalone)').matches }
+            ];
+            
+            checks.forEach(check => {
+                const status = check.supported ? '✅' : '❌';
+                debugLog(`${status} ${check.name}: ${check.supported ? 'Suportado' : 'Não suportado'}`);
+            });
+        }
+        
+        function showDeviceInfo() {
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Platform': navigator.platform,
+                'Viewport': `${window.innerWidth}x${window.innerHeight}`,
+                'Screen': `${screen.width}x${screen.height}`,
+                'Pixel Ratio': window.devicePixelRatio,
+                'Touch': 'ontouchstart' in window ? 'Sim' : 'Não',
+                'Standalone': window.navigator.standalone ? 'Sim' : 'Não'
+            };
+            
+            const deviceInfoElement = document.getElementById('device-info');
+            deviceInfoElement.innerHTML = Object.entries(info)
+                .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
+                .join('<br>');
+        }
+        
+        function setupListeners() {
+            // beforeinstallprompt
+            window.addEventListener('beforeinstallprompt', (e) => {
+                debugLog('🎉 beforeinstallprompt disparado!');
+                e.preventDefault();
+                deferredPrompt = e;
+                updatePWAStatus();
+            });
+            
+            // appinstalled
+            window.addEventListener('appinstalled', () => {
+                debugLog('🎊 PWA instalado com sucesso!');
+                updatePWAStatus();
+            });
+            
+            // Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    debugLog('🔄 Service Worker controller mudou');
+                });
+            }
+        }
+        
+        function updatePWAStatus() {
+            const statusElement = document.getElementById('pwa-status');
+            let html = '';
+            
+            // Verificar se pode instalar
+            const canInstall = !!deferredPrompt;
+            html += `<div class="status ${canInstall ? 'success' : 'warning'}">
+                Pode Instalar: ${canInstall ? 'Sim' : 'Não'}
+            </div>`;
+            
+            // Verificar se está instalado
+            const isInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                               window.navigator.standalone === true;
+            html += `<div class="status ${isInstalled ? 'success' : 'warning'}">
+                Está Instalado: ${isInstalled ? 'Sim' : 'Não'}
+            </div>`;
+            
+            // Verificar Service Worker
+            const swStatus = navigator.serviceWorker?.controller ? 'Ativo' : 'Inativo';
+            html += `<div class="status ${navigator.serviceWorker?.controller ? 'success' : 'error'}">
+                Service Worker: ${swStatus}
+            </div>`;
+            
+            statusElement.innerHTML = html;
+        }
+        
+        async function testInstallPrompt() {
+            debugLog('🧪 Testando prompt de instalação...');
+            
+            if (deferredPrompt) {
+                try {
+                    debugLog('📱 Mostrando prompt nativo...');
+                    deferredPrompt.prompt();
+                    
+                    const { outcome } = await deferredPrompt.userChoice;
+                    debugLog(`👤 Usuário ${outcome} a instalação`);
+                    
+                    deferredPrompt = null;
+                    updatePWAStatus();
+                } catch (error) {
+                    debugLog(`❌ Erro no prompt: ${error.message}`);
+                }
+            } else {
+                debugLog('⚠️ Prompt não disponível (deferredPrompt é null)');
+                
+                // Tentar mostrar prompt customizado
+                if (installManager) {
+                    debugLog('🎨 Tentando prompt customizado...');
+                    installManager.forceShowPrompt();
+                } else {
+                    debugLog('❌ Install manager não disponível');
+                }
+            }
+        }
+        
+        function forceShowPrompt() {
+            debugLog('🔧 Forçando prompt customizado...');
+            
+            if (installManager) {
+                installManager.forceShowPrompt();
+            } else {
+                debugLog('❌ Install manager não encontrado');
+                
+                // Criar prompt simples para teste
+                const prompt = document.createElement('div');
+                prompt.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                    z-index: 10000;
+                    text-align: center;
+                `;
+                
+                prompt.innerHTML = `
+                    <h3>Instalar TechFix Pro</h3>
+                    <p>Adicione à sua tela inicial para acesso rápido</p>
+                    <button onclick="this.parentElement.remove()">Fechar</button>
+                `;
+                
+                document.body.appendChild(prompt);
+                debugLog('✅ Prompt de teste criado');
+            }
+        }
+        
+        function clearStorage() {
+            debugLog('🧹 Limpando storage...');
+            
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                        debugLog(`🗑️ Cache removido: ${name}`);
+                    });
+                });
+            }
+            
+            debugLog('✅ Storage limpo');
+        }
+        
+        async function checkManifest() {
+            debugLog('📋 Verificando manifest...');
+            
+            try {
+                const response = await fetch('/manifest.json');
+                if (response.ok) {
+                    const manifest = await response.json();
+                    debugLog('✅ Manifest carregado:');
+                    debugLog(JSON.stringify(manifest, null, 2));
+                } else {
+                    debugLog(`❌ Erro ao carregar manifest: ${response.status}`);
+                }
+            } catch (error) {
+                debugLog(`❌ Erro no manifest: ${error.message}`);
+            }
+        }
+        
+        async function checkServiceWorker() {
+            debugLog('🔧 Verificando Service Worker...');
+            
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    debugLog(`📊 ${registrations.length} registrations encontradas`);
+                    
+                    registrations.forEach((reg, index) => {
+                        debugLog(`SW ${index + 1}: ${reg.scope}`);
+                        debugLog(`  - Installing: ${!!reg.installing}`);
+                        debugLog(`  - Waiting: ${!!reg.waiting}`);
+                        debugLog(`  - Active: ${!!reg.active}`);
+                    });
+                    
+                    const ready = await navigator.serviceWorker.ready;
+                    debugLog(`✅ SW pronto: ${ready.scope}`);
+                } catch (error) {
+                    debugLog(`❌ Erro no SW: ${error.message}`);
+                }
+            } else {
+                debugLog('❌ Service Worker não suportado');
+            }
+        }
+        
+        function simulateInstall() {
+            debugLog('🎭 Simulando instalação...');
+            
+            // Simular evento appinstalled
+            const event = new Event('appinstalled');
+            window.dispatchEvent(event);
+            
+            debugLog('✅ Evento appinstalled simulado');
+        }
+        
+        function clearLog() {
+            document.getElementById('debug-log').textContent = '';
+        }
+        
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', initDebug);
+        
+        // Atualizar status periodicamente
+        setInterval(updatePWAStatus, 5000);
+    </script>
+</body>
+</html>
