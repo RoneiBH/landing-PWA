@@ -3,27 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#ea580c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TechFix Pro">
     <meta name="msapplication-TileImage" content="/icons/icon-144x144.png">
     <meta name="msapplication-TileColor" content="#ea580c">
-
+    <meta name="apple-touch-fullscreen" content="yes">
+    
     <!-- Manifest -->
     <link rel="manifest" href="/manifest.json">
-
+    
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="/icons/icon-152x152.png">
     <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
-
+    
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
+    
+    <!-- iOS Splash Screens -->
+    <link rel="apple-touch-startup-image" href="/icons/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/icons/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/icons/splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/icons/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+    
     <title>TechFix Pro - Assistência Técnica Especializada em Notebooks</title>
     <meta name="description" content="Assistência técnica especializada em notebooks com mais de 10 anos de experiência. Diagnóstico gratuito, garantia de 90 dias e atendimento rápido.">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/icons/icon-192x192.png" as="image">
+    <link rel="preload" href="/manifest.json" as="fetch" crossorigin>
+    
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -442,6 +456,24 @@
       </div>
     </div>
 
+    <!-- PWA Install Button (opcional) -->
+    <button id="pwa-install-btn" class="pwa-install-btn" style="display: none;">
+        <i class="fas fa-download"></i>
+        Instalar App
+    </button>
+
     <script src="script.js"></script>
+    <script src="mobile-install-prompt.js"></script>
+    
+    <script>
+        // Mostrar botão de instalação se disponível
+        if (window.MobileInstallManager && window.MobileInstallManager.canInstall()) {
+            document.getElementById('pwa-install-btn').style.display = 'block';
+            
+            document.getElementById('pwa-install-btn').addEventListener('click', () => {
+                window.MobileInstallManager.forceShowPrompt();
+            });
+        }
+    </script>
 </body>
 </html>
