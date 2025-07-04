@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia de Testes PWA - TechFix Pro</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f9fafb;
+            line-height: 1.6;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #ea580c;
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: #6b7280;
+            font-size: 1.125rem;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-section h2 {
+            color: #111827;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .test-section h3 {
+            color: #374151;
+            margin: 1.5rem 0 1rem 0;
+            border-left: 4px solid #ea580c;
+            padding-left: 1rem;
+        }
+        
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .checklist li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #e5e7eb;
+        }
+        
+        .checklist li.success {
+            border-left-color: #10b981;
+            background: #ecfdf5;
+        }
+        
+        .checklist li.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .checklist li.error {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .checkbox.checked {
+            background: #10b981;
+            border-color: #10b981;
+            position: relative;
+        }
+        
+        .checkbox.checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: -2px;
+            left: 3px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .alert.info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        
+        .alert.warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+        }
+        
+        .alert.success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        
+        .alert.error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .test-tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .tool-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .tool-card h4 {
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tool-card p {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #ea580c;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #c2410c;
+        }
+        
+        .btn.secondary {
+            background: #6b7280;
+        }
+        
+        .btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .device-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .device-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 0.5rem;
+        }
+        
+        .status-indicator.success { background: #10b981; }
+        .status-indicator.warning { background: #f59e0b; }
+        .status-indicator.error { background: #ef4444; }
+        .status-indicator.pending { background: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 Guia de Testes PWA</h1>
+        <p>Teste completo do Progressive Web App TechFix Pro</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="overallProgress"></div>
+        </div>
+        <p id="progressText">0% concluído</p>
+    </div>
+
+    <!-- Pré-requisitos -->
+    <div class="test-section">
+        <h2>📋 Pré-requisitos</h2>
+        <div class="alert info">
+            <strong>Importante:</strong> PWAs requerem HTTPS para funcionar completamente. Use um servidor local com SSL ou hospede em um serviço que suporte HTTPS.
+        </div>
+        
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Servidor HTTPS configurado</strong><br>
+                    <small>Use: <code>npx serve -s . --ssl-cert</code> ou hospede online</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Todos os arquivos no servidor</strong><br>
+                    <small>index.html, manifest.json, sw.js, pasta /icons/</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Ícones gerados</strong><br>
+                    <small>Todos os tamanhos de 16x16 até 512x512</small>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Teste 1: Validação Básica -->
+    <div class="test-section">
+        <h2>🔍 Teste 1: Validação Básica</h2>
+        
+        <h3>Chrome DevTools</h3>
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Abrir DevTools (F12)</strong><br>
+                    <small>Ir para aba "Application"</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Verificar Manifest</strong><br>
+                    <small>Application > Manifest - deve mostrar informações do PWA</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Verificar Service Worker</strong><br>
+                    <small>Application > Service Workers - deve estar "activated and running"</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Verificar Ícones</strong><br>
+                    <small>Todos os ícones devem carregar sem erro 404</small>
+                </div>
+            </li>
+        </ul>
+
+        <div class="code-block">
+# Comandos úteis no Console do DevTools
+navigator.serviceWorker.getRegistrations()
+navigator.serviceWorker.ready
+window.matchMedia('(display-mode: standalone)').matches
+        </div>
+    </div>
+
+    <!-- Teste 2: Lighthouse -->
+    <div class="test-section">
+        <h2>⚡ Teste 2: Lighthouse PWA Audit</h2>
+        
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Executar Lighthouse</strong><br>
+                    <small>DevTools > Lighthouse > Progressive Web App</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Score PWA ≥ 90</strong><br>
+                    <small>Verificar se passou em todos os critérios</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Installable ✓</strong><br>
+                    <small>Deve mostrar "User can be prompted to install the PWA"</small>
+                </div>
+            </li>
+        </ul>
+
+        <div class="alert warning">
+            <strong>Critérios Lighthouse PWA:</strong><br>
+            • Served over HTTPS<br>
+            • Has a web app manifest<br>
+            • Has an icon at least 192px<br>
+            • Has a registered service worker<br>
+            • Redirects HTTP to HTTPS
+        </div>
+    </div>
+
+    <!-- Teste 3: Instalação -->
+    <div class="test-section">
+        <h2>📱 Teste 3: Instalação do PWA</h2>
+        
+        <h3>Desktop (Chrome/Edge)</h3>
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Prompt de instalação aparece</strong><br>
+                    <small>Ícone de instalação na barra de endereços</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Instalar via menu</strong><br>
+                    <small>Menu ⋮ > "Instalar TechFix Pro"</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>App abre em janela própria</strong><br>
+                    <small>Sem barra de endereços do navegador</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Ícone no desktop/menu iniciar</strong><br>
+                    <small>Ícone da TechFix Pro visível</small>
+                </div>
+            </li>
+        </ul>
+
+        <h3>Mobile (Android)</h3>
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Banner "Adicionar à tela inicial"</strong><br>
+                    <small>Deve aparecer automaticamente ou no menu</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Ícone na tela inicial</strong><br>
+                    <small>Ícone da TechFix Pro na home screen</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Splash screen personalizada</strong><br>
+                    <small>Tela de carregamento com cores da marca</small>
+                </div>
+            </li>
+        </ul>
+
+        <h3>iOS (Safari)</h3>
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Menu "Adicionar à Tela de Início"</strong><br>
+                    <small>Safari > Compartilhar > Adicionar à Tela de Início</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Ícone na tela inicial</strong><br>
+                    <small>Ícone personalizado (não screenshot)</small>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Teste 4: Funcionalidades Offline -->
+    <div class="test-section">
+        <h2>🌐 Teste 4: Funcionalidades Offline</h2>
+        
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Desconectar da internet</strong><br>
+                    <small>DevTools > Network > Offline ou desconectar WiFi</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Site carrega offline</strong><br>
+                    <small>Página principal deve carregar normalmente</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Indicador de offline</strong><br>
+                    <small>Banner vermelho deve aparecer indicando offline</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Imagens em cache</strong><br>
+                    <small>Imagens já visitadas devem carregar</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Formulário funciona offline</strong><br>
+                    <small>Deve salvar dados para enviar quando voltar online</small>
+                </div>
+            </li>
+        </ul>
+
+        <div class="code-block">
+# Testar cache no DevTools
+# Application > Storage > Cache Storage
+# Verificar se os arquivos estão em cache
+        </div>
+    </div>
+
+    <!-- Teste 5: Performance -->
+    <div class="test-section">
+        <h2>⚡ Teste 5: Performance</h2>
+        
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Lighthouse Performance ≥ 90</strong><br>
+                    <small>Executar audit de Performance</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>First Contentful Paint < 2s</strong><br>
+                    <small>Primeira renderização rápida</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Largest Contentful Paint < 2.5s</strong><br>
+                    <small>Conteúdo principal carrega rápido</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Carregamento instantâneo (segunda visita)</strong><br>
+                    <small>Service Worker deve servir do cache</small>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Teste 6: Funcionalidades Específicas -->
+    <div class="test-section">
+        <h2>🔧 Teste 6: Funcionalidades Específicas</h2>
+        
+        <h3>Formulário de Contato</h3>
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Validação funciona</strong><br>
+                    <small>Campos obrigatórios, formato de email</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Formatação de telefone</strong><br>
+                    <small>Máscara (11) 99999-9999 aplicada automaticamente</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Modal de sucesso</strong><br>
+                    <small>Aparece após envio do formulário</small>
+                </div>
+            </li>
+        </ul>
+
+        <h3>Navegação</h3>
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Menu mobile funciona</strong><br>
+                    <small>Hambúrguer abre/fecha corretamente</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Scroll suave</strong><br>
+                    <small>Links de navegação fazem scroll suave</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Links de telefone/WhatsApp</strong><br>
+                    <small>Abrem apps nativos corretamente</small>
+                </div>
+            </li>
+        </ul>
+
+        <h3>Animações</h3>
+        <ul class="checklist">
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Fade-in ao rolar</strong><br>
+                    <small>Elementos aparecem com animação</small>
+                </div>
+            </li>
+            <li>
+                <div class="checkbox" onclick="toggleCheck(this)"></div>
+                <div>
+                    <strong>Hover effects</strong><br>
+                    <small>Cards e botões respondem ao hover</small>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Teste 7: Compatibilidade -->
+    <div class="test-section">
+        <h2>🌍 Teste 7: Compatibilidade de Navegadores</h2>
+        
+        <div class="device-grid">
+            <div class="device-card">
+                <div class="device-icon">🖥️</div>
+                <h4>Chrome Desktop</h4>
+                <span class="status-indicator pending" id="chrome-desktop"></span>
+                <p>Instalação completa</p>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">🖥️</div>
+                <h4>Edge Desktop</h4>
+                <span class="status-indicator pending" id="edge-desktop"></span>
+                <p>Instalação completa</p>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">🖥️</div>
+                <h4>Firefox Desktop</h4>
+                <span class="status-indicator pending" id="firefox-desktop"></span>
+                <p>Funcionalidades limitadas</p>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">📱</div>
+                <h4>Chrome Android</h4>
+                <span class="status-indicator pending" id="chrome-android"></span>
+                <p>Instalação completa</p>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">📱</div>
+                <h4>Safari iOS</h4>
+                <span class="status-indicator pending" id="safari-ios"></span>
+                <p>Instalação manual</p>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">📱</div>
+                <h4>Samsung Internet</h4>
+                <span class="status-indicator pending" id="samsung-internet"></span>
+                <p>Instalação completa</p>
+            </div>
+        </div>
+
+        <div class="alert info">
+            <strong>Dica:</strong> Use BrowserStack ou similar para testar em diferentes dispositivos sem ter acesso físico.
+        </div>
+    </div>
+
+    <!-- Ferramentas de Teste -->
+    <div class="test-section">
+        <h2>🛠️ Ferramentas de Teste</h2>
+        
+        <div class="test-tools">
+            <div class="tool-card">
+                <h4>Chrome DevTools</h4>
+                <p>Ferramenta principal para debug e validação</p>
+                <a href="#" class="btn" onclick="openDevTools()">Abrir DevTools</a>
+            </div>
+            <div class="tool-card">
+                <h4>Lighthouse</h4>
+                <p>Audit completo de PWA, Performance e SEO</p>
+                <a href="#" class="btn" onclick="runLighthouse()">Executar Lighthouse</a>
+            </div>
+            <div class="tool-card">
+                <h4>PWA Builder</h4>
+                <p>Validação e geração de recursos PWA</p>
+                <a href="https://www.pwabuilder.com/" class="btn secondary" target="_blank">Abrir PWA Builder</a>
+            </div>
+            <div class="tool-card">
+                <h4>Web.dev Measure</h4>
+                <p>Teste online de performance e PWA</p>
+                <a href="https://web.dev/measure/" class="btn secondary" target="_blank">Testar Online</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Troubleshooting -->
+    <div class="test-section">
+        <h2>🔧 Troubleshooting</h2>
+        
+        <h3>Problemas Comuns</h3>
+        
+        <div class="alert error">
+            <strong>PWA não instala:</strong><br>
+            • Verificar se está em HTTPS<br>
+            • Confirmar manifest.json válido<br>
+            • Verificar ícones 192x192 e 512x512<br>
+            • Service Worker deve estar ativo
+        </div>
+
+        <div class="alert warning">
+            <strong>Ícones não aparecem:</strong><br>
+            • Verificar caminhos no manifest.json<br>
+            • Confirmar que arquivos existem no servidor<br>
+            • Testar URLs dos ícones diretamente
+        </div>
+
+        <div class="alert warning">
+            <strong>Offline não funciona:</strong><br>
+            • Service Worker registrado?<br>
+            • Cache strategy configurada?<br>
+            • Verificar Network tab no DevTools
+        </div>
+
+        <h3>Comandos de Debug</h3>
+        <div class="code-block">
+// Verificar Service Worker
+navigator.serviceWorker.getRegistrations().then(registrations => {
+    console.log('SW Registrations:', registrations);
+});
+
+// Verificar se é PWA instalado
+if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log('Executando como PWA');
+}
+
+// Verificar manifest
+fetch('/manifest.json').then(r => r.json()).then(console.log);
+
+// Limpar cache
+caches.keys().then(names => {
+    names.forEach(name => caches.delete(name));
+});
+        </div>
+    </div>
+
+    <!-- Relatório Final -->
+    <div class="test-section">
+        <h2>📊 Relatório de Testes</h2>
+        <div id="testReport">
+            <p>Complete os testes acima para gerar o relatório.</p>
+        </div>
+        <button class="btn" onclick="generateReport()">Gerar Relatório</button>
+        <button class="btn secondary" onclick="exportReport()">Exportar PDF</button>
+    </div>
+
+    <script>
+        // Controle de progresso
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.checkbox');
+            const checkedBoxes = document.querySelectorAll('.checkbox.checked');
+            const progress = (checkedBoxes.length / checkboxes.length) * 100;
+            
+            document.getElementById('overallProgress').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '% concluído';
+        }
+
+        // Toggle checkbox
+        function toggleCheck(checkbox) {
+            checkbox.classList.toggle('checked');
+            updateProgress();
+            
+            // Atualizar status do dispositivo se aplicável
+            const deviceId = checkbox.closest('.device-card')?.querySelector('.status-indicator')?.id;
+            if (deviceId) {
+                const indicator = document.getElementById(deviceId);
+                indicator.className = 'status-indicator ' + (checkbox.classList.contains('checked') ? 'success' : 'pending');
+            }
+        }
+
+        // Funções das ferramentas
+        function openDevTools() {
+            alert('Pressione F12 ou Ctrl+Shift+I (Cmd+Opt+I no Mac) para abrir o DevTools');
+        }
+
+        function runLighthouse() {
+            alert('No DevTools, vá para a aba "Lighthouse" e clique em "Generate report" com "Progressive Web App" selecionado');
+        }
+
+        // Gerar relatório
+        function generateReport() {
+            const checkboxes = document.querySelectorAll('.checkbox');
+            const checkedBoxes = document.querySelectorAll('.checkbox.checked');
+            const totalTests = checkboxes.length;
+            const passedTests = checkedBoxes.length;
+            const percentage = Math.round((passedTests / totalTests) * 100);
+            
+            let status = 'error';
+            let statusText = 'Reprovado';
+            
+            if (percentage >= 90) {
+                status = 'success';
+                statusText = 'Aprovado';
+            } else if (percentage >= 70) {
+                status = 'warning';
+                statusText = 'Aprovado com Ressalvas';
+            }
+            
+            const report = `
+                <div class="alert ${status}">
+                    <h3>Status: ${statusText}</h3>
+                    <p><strong>Testes Passados:</strong> ${passedTests}/${totalTests} (${percentage}%)</p>
+                    <p><strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+                </div>
+                
+                <h4>Resumo por Seção:</h4>
+                <ul>
+                    <li>Pré-requisitos: ${getSection('Pré-requisitos')}</li>
+                    <li>Validação Básica: ${getSection('Validação Básica')}</li>
+                    <li>Lighthouse: ${getSection('Lighthouse')}</li>
+                    <li>Instalação: ${getSection('Instalação')}</li>
+                    <li>Offline: ${getSection('Offline')}</li>
+                    <li>Performance: ${getSection('Performance')}</li>
+                    <li>Funcionalidades: ${getSection('Funcionalidades')}</li>
+                </ul>
+                
+                ${percentage < 90 ? '<div class="alert warning"><strong>Ações Recomendadas:</strong><br>• Revisar itens não marcados<br>• Corrigir problemas identificados<br>• Executar testes novamente</div>' : ''}
+            `;
+            
+            document.getElementById('testReport').innerHTML = report;
+        }
+
+        function getSection(sectionName) {
+            // Implementar lógica para contar testes por seção
+            return 'Implementar contagem por seção';
+        }
+
+        function exportReport() {
+            alert('Funcionalidade de exportação seria implementada aqui. Por enquanto, você pode fazer screenshot do relatório.');
+        }
+
+        // Detectar navegador e dispositivo
+        function detectEnvironment() {
+            const userAgent = navigator.userAgent;
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+            const isChrome = /Chrome/i.test(userAgent);
+            const isFirefox = /Firefox/i.test(userAgent);
+            const isSafari = /Safari/i.test(userAgent) && !/Chrome/i.test(userAgent);
+            const isEdge = /Edge/i.test(userAgent);
+            
+            console.log('Ambiente detectado:', {
+                isMobile,
+                isChrome,
+                isFirefox,
+                isSafari,
+                isEdge,
+                userAgent
+            });
+        }
+
+        // Verificações automáticas
+        function runAutomaticChecks() {
+            // Verificar HTTPS
+            if (location.protocol === 'https:') {
+                console.log('✅ HTTPS: OK');
+            } else {
+                console.log('❌ HTTPS: Necessário para PWA');
+            }
+            
+            // Verificar Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    if (registrations.length > 0) {
+                        console.log('✅ Service Worker: Registrado');
+                    } else {
+                        console.log('❌ Service Worker: Não registrado');
+                    }
+                });
+            }
+            
+            // Verificar Manifest
+            fetch('/manifest.json')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('✅ Manifest: OK');
+                        return response.json();
+                    } else {
+                        console.log('❌ Manifest: Não encontrado');
+                    }
+                })
+                .then(manifest => {
+                    if (manifest) {
+                        console.log('Manifest:', manifest);
+                    }
+                })
+                .catch(error => {
+                    console.log('❌ Manifest: Erro ao carregar', error);
+                });
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            detectEnvironment();
+            runAutomaticChecks();
+            updateProgress();
+        });
+    </script>
+</body>
+</html>

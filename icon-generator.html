@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Ícones PWA - TechFix Pro</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f9fafb;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            color: #ea580c;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #6b7280;
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .icon-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .icon-preview {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ea580c;
+        }
+        
+        .icon-title {
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+        
+        .icon-size {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .download-btn {
+            background: #ea580c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background 0.3s;
+        }
+        
+        .download-btn:hover {
+            background: #c2410c;
+        }
+        
+        .instructions {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .instructions h2 {
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+        
+        .instructions ol {
+            color: #374151;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .code-block {
+            background: #f3f4f6;
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #374151;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #92400e;
+        }
+        
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #065f46;
+        }
+        
+        canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 Gerador de Ícones PWA - TechFix Pro</h1>
+        <p>Gere todos os ícones necessários para o Progressive Web App</p>
+    </div>
+
+    <div class="instructions">
+        <h2>📋 Instruções de Uso</h2>
+        <ol>
+            <li>Clique em "Gerar e Baixar" para cada tamanho de ícone necessário</li>
+            <li>Salve todos os arquivos na pasta <code>/icons/</code> do seu projeto</li>
+            <li>Os ícones são gerados automaticamente com o design da TechFix Pro</li>
+            <li>Certifique-se de que todos os ícones estão no servidor antes de testar o PWA</li>
+        </ol>
+        
+        <div class="warning">
+            <strong>⚠️ Importante:</strong> Para produção, considere usar ferramentas como Figma ou Adobe Illustrator para criar ícones de alta qualidade.
+        </div>
+    </div>
+
+    <div class="icon-grid" id="iconGrid">
+        <!-- Ícones serão gerados aqui pelo JavaScript -->
+    </div>
+
+    <div class="instructions">
+        <h2>🚀 Próximos Passos</h2>
+        <div class="success">
+            <strong>✅ Após baixar todos os ícones:</strong>
+            <ol>
+                <li>Coloque todos os arquivos na pasta <code>/icons/</code></li>
+                <li>Verifique se o manifest.json está referenciando os caminhos corretos</li>
+                <li>Teste a instalação do PWA em diferentes dispositivos</li>
+                <li>Use o Chrome DevTools > Application > Manifest para validar</li>
+            </ol>
+        </div>
+        
+        <h3>Estrutura de Pastas Recomendada:</h3>
+        <div class="code-block">
+/projeto/
+├── index.html
+├── manifest.json
+├── sw.js
+└── icons/
+    ├── icon-16x16.png
+    ├── icon-32x32.png
+    ├── icon-72x72.png
+    ├── icon-96x96.png
+    ├── icon-128x128.png
+    ├── icon-144x144.png
+    ├── icon-152x152.png
+    ├── icon-192x192.png
+    ├── icon-384x384.png
+    ├── icon-512x512.png
+    ├── shortcut-orcamento.png
+    ├── shortcut-servicos.png
+    └── shortcut-telefone.png
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // Configurações dos ícones necessários
+        const iconSizes = [
+            { size: 16, name: 'Favicon pequeno', file: 'icon-16x16.png' },
+            { size: 32, name: 'Favicon padrão', file: 'icon-32x32.png' },
+            { size: 72, name: 'Android Chrome', file: 'icon-72x72.png' },
+            { size: 96, name: 'Android Chrome', file: 'icon-96x96.png' },
+            { size: 128, name: 'Chrome Web Store', file: 'icon-128x128.png' },
+            { size: 144, name: 'Windows Metro', file: 'icon-144x144.png' },
+            { size: 152, name: 'Apple Touch Icon', file: 'icon-152x152.png' },
+            { size: 192, name: 'Android Chrome', file: 'icon-192x192.png' },
+            { size: 384, name: 'Android Splash', file: 'icon-384x384.png' },
+            { size: 512, name: 'PWA Principal', file: 'icon-512x512.png' }
+        ];
+
+        // Ícones de shortcuts
+        const shortcutIcons = [
+            { size: 96, name: 'Shortcut Orçamento', file: 'shortcut-orcamento.png', icon: '💰' },
+            { size: 96, name: 'Shortcut Serviços', file: 'shortcut-servicos.png', icon: '🔧' },
+            { size: 96, name: 'Shortcut Telefone', file: 'shortcut-telefone.png', icon: '📞' }
+        ];
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Função para desenhar o ícone principal
+        function drawMainIcon(size) {
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Limpar canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Background com gradiente
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#ea580c');
+            gradient.addColorStop(1, '#c2410c');
+            
+            // Fundo arredondado
+            const radius = size * 0.15;
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+            
+            // Notebook outline
+            const notebookWidth = size * 0.6;
+            const notebookHeight = size * 0.45;
+            const notebookX = (size - notebookWidth) / 2;
+            const notebookY = size * 0.25;
+            
+            // Base do notebook
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(notebookX, notebookY, notebookWidth, notebookHeight);
+            
+            // Tela do notebook
+            const screenPadding = size * 0.02;
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(
+                notebookX + screenPadding, 
+                notebookY + screenPadding, 
+                notebookWidth - screenPadding * 2, 
+                notebookHeight - screenPadding * 2
+            );
+            
+            // Tela interna
+            const innerPadding = size * 0.03;
+            ctx.fillStyle = '#6b7280';
+            ctx.fillRect(
+                notebookX + innerPadding, 
+                notebookY + innerPadding, 
+                notebookWidth - innerPadding * 2, 
+                notebookHeight - innerPadding * 2
+            );
+            
+            // Indicador de power (LED)
+            ctx.fillStyle = '#ea580c';
+            ctx.beginPath();
+            ctx.arc(size / 2, notebookY + notebookHeight / 2, size * 0.02, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Base/teclado
+            const baseHeight = size * 0.15;
+            const baseY = notebookY + notebookHeight;
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(notebookX, baseY, notebookWidth, baseHeight);
+            
+            // Trackpad
+            const trackpadSize = size * 0.08;
+            const trackpadX = size / 2 - trackpadSize / 2;
+            const trackpadY = baseY + baseHeight * 0.3;
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(trackpadX, trackpadY, trackpadSize, trackpadSize * 0.6);
+            
+            // Pés do notebook
+            ctx.fillStyle = '#ea580c';
+            const footWidth = size * 0.03;
+            const footHeight = size * 0.04;
+            ctx.fillRect(notebookX + size * 0.02, baseY + baseHeight, footWidth, footHeight);
+            ctx.fillRect(notebookX + notebookWidth - footWidth - size * 0.02, baseY + baseHeight, footWidth, footHeight);
+            
+            // Detalhes adicionais para tamanhos maiores
+            if (size >= 128) {
+                // Dobradiça
+                ctx.fillStyle = '#9ca3af';
+                ctx.fillRect(notebookX, notebookY - size * 0.01, notebookWidth, size * 0.02);
+                
+                // Teclas (simuladas)
+                if (size >= 192) {
+                    ctx.fillStyle = '#4b5563';
+                    const keySize = size * 0.015;
+                    const keySpacing = size * 0.02;
+                    
+                    for (let row = 0; row < 3; row++) {
+                        for (let col = 0; col < 8; col++) {
+                            const keyX = notebookX + size * 0.08 + col * keySpacing;
+                            const keyY = baseY + size * 0.02 + row * keySpacing;
+                            ctx.fillRect(keyX, keyY, keySize, keySize);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Função para desenhar ícones de shortcut
+        function drawShortcutIcon(size, emoji) {
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Limpar canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#f3f4f6');
+            gradient.addColorStop(1, '#e5e7eb');
+            
+            const radius = size * 0.2;
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+            
+            // Border
+            ctx.strokeStyle = '#d1d5db';
+            ctx.lineWidth = size * 0.02;
+            ctx.stroke();
+            
+            // Emoji/Icon
+            ctx.font = `${size * 0.5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#ea580c';
+            ctx.fillText(emoji, size / 2, size / 2);
+        }
+
+        // Função para baixar o canvas como PNG
+        function downloadCanvas(filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Gerar grid de ícones
+        function generateIconGrid() {
+            const iconGrid = document.getElementById('iconGrid');
+            
+            // Ícones principais
+            iconSizes.forEach(iconConfig => {
+                const iconCard = document.createElement('div');
+                iconCard.className = 'icon-card';
+                
+                iconCard.innerHTML = `
+                    <div class="icon-preview">
+                        <canvas width="80" height="80" style="display: block; border-radius: 8px;"></canvas>
+                    </div>
+                    <div class="icon-title">${iconConfig.name}</div>
+                    <div class="icon-size">${iconConfig.size}x${iconConfig.size}px</div>
+                    <button class="download-btn" onclick="generateAndDownload(${iconConfig.size}, '${iconConfig.file}', 'main')">
+                        Gerar e Baixar
+                    </button>
+                `;
+                
+                iconGrid.appendChild(iconCard);
+                
+                // Desenhar preview
+                const previewCanvas = iconCard.querySelector('canvas');
+                const previewCtx = previewCanvas.getContext('2d');
+                
+                // Desenhar versão pequena para preview
+                canvas.width = iconConfig.size;
+                canvas.height = iconConfig.size;
+                drawMainIcon(iconConfig.size);
+                
+                previewCtx.drawImage(canvas, 0, 0, iconConfig.size, iconConfig.size, 0, 0, 80, 80);
+            });
+            
+            // Ícones de shortcuts
+            shortcutIcons.forEach(shortcutConfig => {
+                const iconCard = document.createElement('div');
+                iconCard.className = 'icon-card';
+                
+                iconCard.innerHTML = `
+                    <div class="icon-preview">
+                        <canvas width="80" height="80" style="display: block; border-radius: 8px;"></canvas>
+                    </div>
+                    <div class="icon-title">${shortcutConfig.name}</div>
+                    <div class="icon-size">${shortcutConfig.size}x${shortcutConfig.size}px</div>
+                    <button class="download-btn" onclick="generateAndDownload(${shortcutConfig.size}, '${shortcutConfig.file}', 'shortcut', '${shortcutConfig.icon}')">
+                        Gerar e Baixar
+                    </button>
+                `;
+                
+                iconGrid.appendChild(iconCard);
+                
+                // Desenhar preview
+                const previewCanvas = iconCard.querySelector('canvas');
+                const previewCtx = previewCanvas.getContext('2d');
+                
+                canvas.width = shortcutConfig.size;
+                canvas.height = shortcutConfig.size;
+                drawShortcutIcon(shortcutConfig.size, shortcutConfig.icon);
+                
+                previewCtx.drawImage(canvas, 0, 0, shortcutConfig.size, shortcutConfig.size, 0, 0, 80, 80);
+            });
+        }
+
+        // Função global para gerar e baixar
+        window.generateAndDownload = function(size, filename, type, emoji = '') {
+            if (type === 'main') {
+                drawMainIcon(size);
+            } else if (type === 'shortcut') {
+                drawShortcutIcon(size, emoji);
+            }
+            
+            downloadCanvas(filename);
+        };
+
+        // Função para baixar todos os ícones
+        function downloadAllIcons() {
+            let delay = 0;
+            
+            // Ícones principais
+            iconSizes.forEach(iconConfig => {
+                setTimeout(() => {
+                    drawMainIcon(iconConfig.size);
+                    downloadCanvas(iconConfig.file);
+                }, delay);
+                delay += 500;
+            });
+            
+            // Ícones de shortcuts
+            shortcutIcons.forEach(shortcutConfig => {
+                setTimeout(() => {
+                    drawShortcutIcon(shortcutConfig.size, shortcutConfig.icon);
+                    downloadCanvas(shortcutConfig.file);
+                }, delay);
+                delay += 500;
+            });
+        }
+
+        // Adicionar botão para baixar todos
+        document.addEventListener('DOMContentLoaded', () => {
+            generateIconGrid();
+            
+            const header = document.querySelector('.header');
+            const downloadAllBtn = document.createElement('button');
+            downloadAllBtn.textContent = '📦 Baixar Todos os Ícones';
+            downloadAllBtn.className = 'download-btn';
+            downloadAllBtn.style.padding = '1rem 2rem';
+            downloadAllBtn.style.fontSize = '1rem';
+            downloadAllBtn.style.marginTop = '1rem';
+            downloadAllBtn.onclick = downloadAllIcons;
+            
+            header.appendChild(downloadAllBtn);
+        });
+
+        // Polyfill para roundRect (compatibilidade)
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+    </script>
+</body>
+</html>
